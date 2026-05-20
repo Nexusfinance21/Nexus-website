@@ -93,6 +93,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "'Outfit', system-ui, sans-serif", background: C.bg, color: C.ink, minHeight: "100vh" }}>
+      
       {/* HERO */}
       <section style={{ background: "linear-gradient(to bottom, #0a1428, #05070f)", padding: "140px 24px 100px", textAlign: "center" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
@@ -111,9 +112,11 @@ export default function App() {
       <section id="calculator" style={{ padding: "90px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 48 }}>
-            {/* Controls */}
+            
+            {/* Left Controls */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 20, padding: 36, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}>
               <h3 style={{ marginBottom: 28, fontSize: 22 }}>Choose your investing pace</h3>
+              
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {PRESETS.map(p => (
                   <button
@@ -128,88 +131,4 @@ export default function App() {
                       textAlign: "left"
                     }}
                   >
-                    <div style={{ fontSize: 34, marginBottom: 12 }}>{p.emoji}</div>
-                    <div style={{ fontWeight: 700, fontSize: 18.5 }}>{p.label}</div>
-                    <div style={{ fontSize: 15, color: C.inkMid, marginTop: 6 }}>{p.desc}</div>
-                  </button>
-                ))}
-              </div>
-
-              {isCustom && (
-                <div style={{ marginTop: 32, paddingTop: 28, borderTop: `1px solid ${C.border}` }}>
-                  <div style={{ fontSize: 13.5, color: C.inkLight, marginBottom: 20 }}>CUSTOM + 2× BOOSTS</div>
-                  {[
-                    { label: "Monthly", val: monthly, set: setMonthly, color: C.accent, max: 1000 },
-                    { label: "Yearly Boost (2×)", val: extra, set: setExtra, color: C.green, max: 5000 }
-                  ].map(s => (
-                    <div key={s.label} style={{ marginBottom: 26 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                        <span>{s.label}</span>
-                        <span style={{ color: s.color, fontWeight: 700 }}>€{s.val}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min={s.label === "Monthly" ? 50 : 0}
-                        max={s.max}
-                        step={25}
-                        value={s.val}
-                        onChange={e => s.set(parseInt(e.target.value))}
-                        style={{ width: "100%", accentColor: s.color }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ marginTop: 32, background: "#0a1428", padding: 24, borderRadius: 16, border: `1px solid ${C.border}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span>Time Horizon</span>
-                  <span style={{ fontWeight: 700, color: C.accent }}>{years} years</span>
-                </div>
-                <input type="range" min={10} max={35} value={years} onChange={e => setYears(parseInt(e.target.value))} style={{ width: "100%", accentColor: C.accent }} />
-              </div>
-            </div>
-
-            {/* Results */}
-            <div style={{ background: C.card, borderRadius: 24, padding: 40, boxShadow: "0 25px 50px rgba(59,130,246,0.15)" }}>
-              <div style={{ textAlign: "center", marginBottom: 32 }}>
-                <div style={{ fontSize: 15, color: C.inkMid }}>Your portfolio in {years} years</div>
-                <div style={{ fontSize: 54, fontWeight: 900, letterSpacing: -2, margin: "12px 0" }}>
-                  €{displayed.toLocaleString()}
-                </div>
-                <div style={{ color: C.inkMid }}>Starting with €300 • 15.5% compounded</div>
-              </div>
-
-              <ResponsiveContainer width="100%" height={280}>
-                <AreaChart data={pts}>
-                  <defs>
-                    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={C.accent} stopOpacity={0.28} />
-                      <stop offset="95%" stopColor={C.accent} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="year" tick={{ fill: C.inkLight }} />
-                  <YAxis tick={{ fill: C.inkLight }} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-                  <Tooltip content={<Tip />} />
-                  <Area type="monotone" dataKey="value" stroke={C.accent} strokeWidth={3} fill="url(#cg)" dot={false} />
-                </AreaChart>
-              </ResponsiveContainer>
-
-              <div style={{ marginTop: 40 }}>
-                <div style={{ fontSize: 14, color: C.inkLight, marginBottom: 12 }}>MILESTONES</div>
-                {milData.map(m => (
-                  <div key={m.label} style={{
-                    display: "flex", justifyContent: "space-between", padding: "16px 20px",
-                    background: m.yr ? m.color + "15" : "#0a1428", borderRadius: 14,
-                    marginBottom: 10, border: `1px solid ${m.yr ? m.color + "40" : C.border}`
-                  }}>
-                    <span style={{ fontWeight: 700, color: m.yr ? m.color : C.inkLight }}>{m.label}</span>
-                    <span>{m.yr ? `Year ${m.yr}` : `> ${years} years`}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </
+                    <div style={{ fontSize: 34, marginBottom: 12
