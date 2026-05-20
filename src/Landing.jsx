@@ -413,7 +413,7 @@ export default function Landing() {
           <h2 style={{fontSize:36,fontWeight:900,color:C.ink,margin:"20px 0 14px",letterSpacing:-1.5}}>Join the waitlist</h2>
           <p style={{fontSize:15,color:C.inkMid,lineHeight:1.7,marginBottom:36}}>The Nexus app is coming. Get early access, founding member pricing, and updates on the $1M journey.</p>
           <button onClick={()=>navigate("/waitlist")} style={{display:"inline-flex",alignItems:"center",gap:10,background:C.accent,color:"#fff",border:"none",borderRadius:14,padding:"18px 40px",fontSize:16,fontWeight:800,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 8px 24px rgba(0,87,255,0.25)"}}>
-            Join Nexus — It's Free →
+            Join the Waitlist →
           </button>
           <div style={{display:"flex",gap:32,justifyContent:"center",marginTop:44}}>
             {[["🔒","No spam"],["📱","App 2027"],["🏦","Nexus Bank 2029"]].map(([ic,lb])=>(
