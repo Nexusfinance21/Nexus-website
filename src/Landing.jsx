@@ -9,6 +9,26 @@ const C = {
   gold:"#f59e0b",
 };
 
+function useIsMobile() {
+  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return w < 768;
+}
+
+function useIsTablet() {
+  const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  useEffect(() => {
+    const fn = () => setW(window.innerWidth);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return w < 1024;
+}
+
 function project(monthly, extraPerYear, years, rate=0.155) {
   const mr = rate/12; let bal=300; const pts=[];
   for(let m=0; m<=years*12; m++) {
@@ -31,10 +51,10 @@ function useCountUp(target, duration=1000) {
 }
 
 const PRESETS = [
-  {id:"starter",   label:"Starter",    emoji:"🌱", monthly:50,  extra:200,  desc:"€50/mo + 2×€200/yr",  millionaireYr:34},
-  {id:"builder",   label:"Builder",    emoji:"🏗️", monthly:150, extra:800,  desc:"€150/mo + 2×€400/yr", millionaireYr:22},
-  {id:"aggressive",label:"Aggressive",emoji:"🚀", monthly:300, extra:1500, desc:"€300/mo + 2×€750/yr", millionaireYr:17},
-  {id:"custom",    label:"Custom",     emoji:"⚙️", monthly:null,extra:null, desc:"Set your own pace",    millionaireYr:null},
+  {id:"starter",    label:"Starter",    emoji:"🌱", monthly:50,  extra:200,  desc:"€50/mo + 2×€200/yr",  millionaireYr:34},
+  {id:"builder",    label:"Builder",    emoji:"🏗️", monthly:150, extra:800,  desc:"€150/mo + 2×€400/yr", millionaireYr:22},
+  {id:"aggressive", label:"Aggressive", emoji:"🚀", monthly:300, extra:1500, desc:"€300/mo + 2×€750/yr", millionaireYr:17},
+  {id:"custom",     label:"Custom",     emoji:"⚙️", monthly:null,extra:null, desc:"Set your own pace",    millionaireYr:null},
 ];
 
 const MILESTONES = [
@@ -50,28 +70,18 @@ const Tip = ({active,payload,label}) => {
 };
 
 function PresetCard({p, selected, onSelect}) {
-  const [hovered, setHovered] = useState(false);
   return (
-    <div style={{position:"relative"}} onMouseEnter={()=>setHovered(true)} onMouseLeave={()=>setHovered(false)}>
-      <button data-preset={p.id} onClick={()=>onSelect(p.id)}
-        style={{width:"100%",background:selected?C.accent:C.bg,color:selected?"#fff":C.ink,border:`1.5px solid ${selected?C.accent:C.border}`,borderRadius:12,padding:"12px 14px",cursor:"pointer",textAlign:"left",fontFamily:"inherit"}}>
-        <div style={{fontSize:16,marginBottom:4}}>{p.emoji}</div>
-        <div style={{fontSize:13,fontWeight:700}}>{p.label}</div>
-        <div style={{fontSize:11,opacity:0.7,marginTop:2}}>{p.desc}</div>
-      </button>
-      {hovered && p.id!=="custom" && (
-        <div style={{position:"absolute",bottom:"calc(100% + 8px)",left:"50%",transform:"translateX(-50%)",background:C.bgDark,color:"#fff",borderRadius:10,padding:"10px 14px",fontSize:12,zIndex:50,whiteSpace:"nowrap",boxShadow:"0 8px 24px rgba(0,0,0,0.2)",pointerEvents:"none"}}>
-          <div style={{fontWeight:700,marginBottom:4}}>{p.label} Plan</div>
-          <div style={{color:"#9ca3af",marginBottom:2}}>💰 {p.desc}</div>
-          <div style={{color:C.green,fontWeight:700}}>🏁 Millionaire in ~{p.millionaireYr} years</div>
-          <div style={{position:"absolute",bottom:-5,left:"50%",transform:"translateX(-50%)",width:10,height:10,background:C.bgDark,rotate:"45deg"}}/>
-        </div>
-      )}
-    </div>
+    <button data-preset={p.id} onClick={()=>onSelect(p.id)}
+      style={{width:"100%",background:selected?C.accent:C.bg,color:selected?"#fff":C.ink,border:`1.5px solid ${selected?C.accent:C.border}`,borderRadius:12,padding:"12px 14px",cursor:"pointer",textAlign:"left",fontFamily:"inherit"}}>
+      <div style={{fontSize:16,marginBottom:4}}>{p.emoji}</div>
+      <div style={{fontSize:13,fontWeight:700}}>{p.label}</div>
+      <div style={{fontSize:11,opacity:0.7,marginTop:2}}>{p.desc}</div>
+    </button>
   );
 }
 
 function Calculator() {
+  const isMobile = useIsMobile();
   const [preset,setPreset]=useState("builder");
   const [monthly,setMonthly]=useState(150);
   const [extra,setExtra]=useState(800);
@@ -85,14 +95,15 @@ function Calculator() {
   const milData=MILESTONES.map(m=>({...m,yr:milestoneYear(pts,m.target)}));
 
   return (
-    <section style={{background:C.bg,padding:"80px 24px"}} id="calculator">
+    <section style={{background:C.bg,padding:isMobile?"60px 16px":"80px 24px"}} id="calculator">
       <div style={{maxWidth:1000,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:50}}>
+        <div style={{textAlign:"center",marginBottom:isMobile?36:50}}>
           <span style={{display:"inline-flex",fontSize:11,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:C.accent,background:C.accentBg,padding:"4px 12px",borderRadius:20}}>💡 Calculator</span>
-          <h2 style={{fontSize:36,fontWeight:900,color:C.ink,margin:"16px 0 12px",letterSpacing:-1.5}}>See your path to $1M</h2>
-          <p style={{fontSize:16,color:C.inkMid,maxWidth:440,margin:"0 auto"}}>Pick a preset or customise. Your plan updates instantly.</p>
+          <h2 style={{fontSize:isMobile?28:36,fontWeight:900,color:C.ink,margin:"16px 0 12px",letterSpacing:-1}}>See your path to $1M</h2>
+          <p style={{fontSize:15,color:C.inkMid,maxWidth:440,margin:"0 auto"}}>Pick a preset or customise. Your plan updates instantly.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr",gap:24,alignItems:"start"}}>
+        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1.4fr",gap:isMobile?16:24,alignItems:"start"}}>
+          {/* Left column */}
           <div style={{display:"grid",gap:14}}>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"24px"}}>
               <div style={{fontSize:11,fontWeight:700,color:C.inkLight,textTransform:"uppercase",letterSpacing:1,marginBottom:14}}>Choose your pace</div>
@@ -127,24 +138,26 @@ function Calculator() {
               </div>
             </div>
           </div>
+
+          {/* Right column */}
           <div style={{display:"grid",gap:14}}>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"24px",boxShadow:"0 4px 24px rgba(0,87,255,0.08)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24,flexWrap:"wrap",gap:12}}>
                 <div>
                   <div style={{fontSize:11,color:C.inkLight,textTransform:"uppercase",letterSpacing:1}}>Portfolio in {years} years</div>
-                  <div style={{fontSize:36,fontWeight:900,color:C.ink,letterSpacing:-1.5,lineHeight:1.1,marginTop:6}}>${displayed.toLocaleString()}</div>
+                  <div style={{fontSize:isMobile?28:36,fontWeight:900,color:C.ink,letterSpacing:-1,lineHeight:1.1,marginTop:6}}>${displayed.toLocaleString()}</div>
                   <div style={{fontSize:13,color:C.inkMid,marginTop:6}}>Starting from €300 · ${am}/mo avg</div>
                 </div>
-                <div style={{background:C.greenBg,borderRadius:10,padding:"8px 14px",textAlign:"center"}}>
+                <div style={{background:C.greenBg,borderRadius:10,padding:"8px 14px",textAlign:"center",flexShrink:0}}>
                   <div style={{fontSize:18,fontWeight:900,color:C.green}}>{milestoneYear(pts,1_000_000)?`Yr ${milestoneYear(pts,1_000_000)}`:`>${years}yr`}</div>
                   <div style={{fontSize:10,color:C.green,marginTop:2}}>to $1M</div>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={240}>
+              <ResponsiveContainer width="100%" height={isMobile?180:240}>
                 <AreaChart data={pts}>
                   <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.accent} stopOpacity={0.12}/><stop offset="95%" stopColor={C.accent} stopOpacity={0}/></linearGradient></defs>
-                  <XAxis dataKey="year" tick={{fill:C.inkLight,fontSize:11}} axisLine={false} tickLine={false} tickFormatter={v=>`Y${v}`}/>
-                  <YAxis tick={{fill:C.inkLight,fontSize:11}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?`$${(v/1e6).toFixed(1)}M`:v>=1e3?`$${(v/1e3).toFixed(0)}K`:`$${v}`}/>
+                  <XAxis dataKey="year" tick={{fill:C.inkLight,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>`Y${v}`}/>
+                  <YAxis tick={{fill:C.inkLight,fontSize:10}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1e6?`$${(v/1e6).toFixed(1)}M`:v>=1e3?`$${(v/1e3).toFixed(0)}K`:`$${v}`} width={45}/>
                   <Tooltip content={<Tip/>}/>
                   <Area type="monotone" dataKey="value" name="Portfolio" stroke={C.accent} strokeWidth={2.5} fill="url(#cg)" dot={false}/>
                 </AreaChart>
@@ -161,41 +174,42 @@ function Calculator() {
 }
 
 function PathsSection() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const scrollToCustom = () => {
     document.getElementById("calculator")?.scrollIntoView({behavior:"smooth"});
     setTimeout(()=>{ const customBtn=document.querySelector('[data-preset="custom"]'); if(customBtn)customBtn.click(); }, 600);
   };
   const paths = [
-    {emoji:"🌱",label:"Starter",   monthly:"€50", boost:"2×€200/yr", years:34,   color:C.accent},
-    {emoji:"🏗️",label:"Builder",   monthly:"€150",boost:"2×€400/yr", years:22,   color:C.green},
-    {emoji:"🚀",label:"Aggressive",monthly:"€300",boost:"2×€750/yr", years:17,   color:C.gold},
-    {emoji:"⚙️",label:"Your pace", monthly:"?",   boost:"you decide",years:null, color:"#e11d48"},
+    {emoji:"🌱",label:"Starter",    monthly:"€50",  boost:"2×€200/yr", years:34,   color:C.accent},
+    {emoji:"🏗️",label:"Builder",   monthly:"€150", boost:"2×€400/yr", years:22,   color:C.green},
+    {emoji:"🚀",label:"Aggressive", monthly:"€300", boost:"2×€750/yr", years:17,   color:C.gold},
+    {emoji:"⚙️",label:"Your pace", monthly:"?",    boost:"you decide", years:null, color:"#e11d48"},
   ];
   return (
-    <section style={{background:"#f0f4ff",padding:"80px 24px",borderTop:`1px solid ${C.border}`}}>
+    <section style={{background:"#f0f4ff",padding:isMobile?"60px 16px":"80px 24px",borderTop:`1px solid ${C.border}`}}>
       <div style={{maxWidth:1000,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:48}}>
+        <div style={{textAlign:"center",marginBottom:isMobile?36:48}}>
           <span style={{display:"inline-flex",fontSize:11,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:C.accent,background:C.accentBg,padding:"4px 12px",borderRadius:20}}>🗺️ The Paths</span>
-          <h2 style={{fontSize:36,fontWeight:900,color:C.ink,margin:"16px 0 14px",letterSpacing:-1.5}}>Realistically, how do you get to $1M?</h2>
-          <p style={{fontSize:16,color:C.inkMid,maxWidth:560,margin:"0 auto",lineHeight:1.75}}>Start with <strong>€50/month</strong> — that alone, with two yearly boosts, makes you a millionaire in <strong>34 years</strong>. But the faster you move, the sooner you get there.</p>
+          <h2 style={{fontSize:isMobile?26:36,fontWeight:900,color:C.ink,margin:"16px 0 14px",letterSpacing:-1}}>Realistically, how do you get to $1M?</h2>
+          <p style={{fontSize:15,color:C.inkMid,maxWidth:560,margin:"0 auto",lineHeight:1.75}}>Start with <strong>€50/month</strong> — that alone makes you a millionaire in <strong>34 years</strong>. The faster you move, the sooner you get there.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:40}}>
+        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr 1fr":"repeat(4,1fr)",gap:isMobile?12:16,marginBottom:40}}>
           {paths.map(p=>(
-            <div key={p.label} style={{background:"#fff",border:`1.5px solid ${p.color}33`,borderRadius:18,padding:"24px 18px",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.04)"}}>
-              <div style={{fontSize:28,marginBottom:10}}>{p.emoji}</div>
-              <div style={{fontSize:14,fontWeight:800,color:C.ink,marginBottom:6}}>{p.label}</div>
-              <div style={{fontSize:22,fontWeight:900,color:p.color,letterSpacing:-0.5,marginBottom:4}}>{p.monthly}<span style={{fontSize:13,fontWeight:600,color:C.inkMid}}>/mo</span></div>
-              <div style={{fontSize:11,color:C.inkMid,marginBottom:14}}>+ {p.boost}</div>
+            <div key={p.label} style={{background:"#fff",border:`1.5px solid ${p.color}33`,borderRadius:18,padding:isMobile?"18px 14px":"24px 18px",textAlign:"center",boxShadow:"0 4px 20px rgba(0,0,0,0.04)"}}>
+              <div style={{fontSize:isMobile?22:28,marginBottom:8}}>{p.emoji}</div>
+              <div style={{fontSize:isMobile?12:14,fontWeight:800,color:C.ink,marginBottom:6}}>{p.label}</div>
+              <div style={{fontSize:isMobile?18:22,fontWeight:900,color:p.color,letterSpacing:-0.5,marginBottom:4}}>{p.monthly}<span style={{fontSize:11,fontWeight:600,color:C.inkMid}}>/mo</span></div>
+              <div style={{fontSize:10,color:C.inkMid,marginBottom:12}}>+ {p.boost}</div>
               <div style={{background:p.color+"10",border:`1px solid ${p.color}30`,borderRadius:10,padding:"8px 0"}}>
-                {p.years?<><div style={{fontSize:18,fontWeight:900,color:p.color}}>~{p.years} yrs</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>to $1M</div></>:<><div style={{fontSize:13,fontWeight:700,color:p.color}}>Your timeline</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>you decide</div></>}
+                {p.years?<><div style={{fontSize:isMobile?14:18,fontWeight:900,color:p.color}}>~{p.years} yrs</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>to $1M</div></>:<><div style={{fontSize:12,fontWeight:700,color:p.color}}>Your timeline</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>you decide</div></>}
               </div>
             </div>
           ))}
         </div>
         <div style={{textAlign:"center"}}>
-          <p style={{fontSize:14,color:C.inkMid,marginBottom:20}}>Not sure which fits you? Set your own numbers — the calculator will show your exact path.</p>
-          <button onClick={scrollToCustom} style={{display:"inline-flex",alignItems:"center",gap:10,background:C.accent,color:"#fff",border:"none",borderRadius:14,padding:"16px 32px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 8px 24px rgba(0,87,255,0.25)"}}>
+          <p style={{fontSize:14,color:C.inkMid,marginBottom:20}}>Not sure which fits you? Set your own numbers.</p>
+          <button onClick={scrollToCustom} style={{display:"inline-flex",alignItems:"center",gap:10,background:C.accent,color:"#fff",border:"none",borderRadius:14,padding:isMobile?"14px 24px":"16px 32px",fontSize:isMobile?14:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 8px 24px rgba(0,87,255,0.25)"}}>
             ⚙️ Adjust to my situation →
           </button>
         </div>
@@ -205,43 +219,44 @@ function PathsSection() {
 }
 
 function Story() {
+  const isMobile = useIsMobile();
   return (
-    <section id="story" style={{background:C.bgDark,padding:"80px 24px"}}>
+    <section id="story" style={{background:C.bgDark,padding:isMobile?"60px 16px":"80px 24px"}}>
       <div style={{maxWidth:760,margin:"0 auto"}}>
         <span style={{display:"inline-flex",fontSize:11,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:"#6ee7b7",background:"#6ee7b711",padding:"4px 12px",borderRadius:20}}>✦ The Story</span>
-        <h2 style={{fontSize:36,fontWeight:900,color:"#fff",margin:"20px 0 36px",letterSpacing:-1.5,lineHeight:1.1}}>Built by a 25-year-old<br/>student with €300.</h2>
+        <h2 style={{fontSize:isMobile?28:36,fontWeight:900,color:"#fff",margin:"20px 0 36px",letterSpacing:-1,lineHeight:1.1}}>Built by a 25-year-old<br/>student with €300.</h2>
         <div style={{display:"grid",gap:16}}>
           {[{i:"🎓",t:"It started with school",d:"Studying, working part-time, and dreaming bigger. No trust fund. No inheritance. Just a €300 deposit and a spreadsheet that got out of hand."},
             {i:"📊",t:"The dashboard became a tool",d:"What started as tracking my own investments turned into a full risk engine. Friends asked for it. Strangers asked for it. So we built it properly."},
             {i:"🏦",t:"The bigger vision: Nexus Bank",d:"This tool is phase one. The real goal is to build a fintech bank — one built for people who are starting from nothing and thinking in decades, not quarters."},
             {i:"🤝",t:"You're early",d:"If you're here now, you're part of the founding story. The waitlist is open. The app is coming. And the journey to $1M — for both of us — has already started."}].map(s=>(
-            <div key={s.t} style={{display:"flex",gap:18,padding:"22px 24px",background:"#ffffff0a",border:"1px solid #ffffff12",borderRadius:14}}>
-              <span style={{fontSize:26,flexShrink:0,marginTop:2}}>{s.i}</span>
+            <div key={s.t} style={{display:"flex",gap:16,padding:"20px",background:"#ffffff0a",border:"1px solid #ffffff12",borderRadius:14}}>
+              <span style={{fontSize:24,flexShrink:0,marginTop:2}}>{s.i}</span>
               <div><div style={{fontSize:14,fontWeight:800,color:"#fff",marginBottom:8}}>{s.t}</div><p style={{margin:0,fontSize:13,color:"#9ca3af",lineHeight:1.75}}>{s.d}</p></div>
             </div>
           ))}
         </div>
-        <div style={{marginTop:32,background:"linear-gradient(135deg,#ffd60a18,#f7258518)",border:"1px solid #ffd60a33",borderRadius:18,padding:"28px"}}>
+        <div style={{marginTop:32,background:"linear-gradient(135deg,#ffd60a18,#f7258518)",border:"1px solid #ffd60a33",borderRadius:18,padding:isMobile?"20px":"28px"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><span style={{fontSize:22}}>🎉</span><span style={{fontSize:15,fontWeight:800,color:"#ffd60a"}}>Every milestone gets celebrated</span></div>
           <p style={{margin:"0 0 20px",fontSize:13,color:"#9ca3af",lineHeight:1.75}}>This isn't just a tool — it's a community. When you hit <strong style={{color:"#fff"}}>$10K</strong>, we celebrate. When you hit <strong style={{color:"#fff"}}>$50K</strong>, we celebrate louder. And when someone in the Nexus community hits <strong style={{color:"#ffd60a"}}>$1M</strong> — we make some noise.</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:isMobile?8:10}}>
             {[{m:"$10K",e:"🌱",c:"#4361ee",l:"First win"},{m:"$50K",e:"🔥",c:"#00c48c",l:"Half way"},{m:"$250K",e:"⚡",c:"#f59e0b",l:"Almost there"},{m:"$1M",e:"👑",c:"#e11d48",l:"Legend"}].map(ms=>(
-              <div key={ms.m} style={{background:"#ffffff08",border:`1px solid ${ms.c}33`,borderRadius:12,padding:"14px 10px",textAlign:"center"}}>
-                <div style={{fontSize:20,marginBottom:6}}>{ms.e}</div>
-                <div style={{fontSize:14,fontWeight:900,color:ms.c}}>{ms.m}</div>
+              <div key={ms.m} style={{background:"#ffffff08",border:`1px solid ${ms.c}33`,borderRadius:12,padding:isMobile?"10px 6px":"14px 10px",textAlign:"center"}}>
+                <div style={{fontSize:isMobile?16:20,marginBottom:6}}>{ms.e}</div>
+                <div style={{fontSize:isMobile?12:14,fontWeight:900,color:ms.c}}>{ms.m}</div>
                 <div style={{fontSize:10,color:"#ffffff50",marginTop:3}}>{ms.l}</div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{marginTop:20,background:"#ffffff06",border:"1px solid #ffffff12",borderRadius:18,padding:"28px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+        <div style={{marginTop:20,background:"#ffffff06",border:"1px solid #ffffff12",borderRadius:18,padding:isMobile?"20px":"28px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,flexWrap:"wrap"}}>
             <span style={{fontSize:20}}>🌐</span>
             <span style={{fontSize:15,fontWeight:800,color:"#fff"}}>The Nexus Network</span>
             <span style={{fontSize:10,fontWeight:700,color:"#00c48c",background:"#00c48c18",padding:"3px 8px",borderRadius:20,letterSpacing:1}}>COMING SOON</span>
           </div>
-          <p style={{margin:"0 0 20px",fontSize:13,color:"#9ca3af",lineHeight:1.7,maxWidth:520}}>A private community of investors on the same journey. Share wins, stay accountable, grow together — publicly or anonymously. Always your choice.</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
+          <p style={{margin:"0 0 20px",fontSize:13,color:"#9ca3af",lineHeight:1.7}}>A private community of investors on the same journey. Share wins, stay accountable, grow together.</p>
+          <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr 1fr",gap:10,marginBottom:20}}>
             {[{i:"🤝",t:"Accountability",d:"Monthly check-ins with investors at your level"},{i:"📣",t:"Announcements",d:"Celebrate milestones publicly or anonymously"},{i:"🔒",t:"Privacy first",d:"Only share what you choose. Always."}].map(f=>(
               <div key={f.t} style={{background:"#ffffff08",borderRadius:12,padding:"14px 12px",textAlign:"center"}}>
                 <div style={{fontSize:20,marginBottom:6}}>{f.i}</div>
@@ -271,20 +286,20 @@ function Story() {
 function PrivacyModal({onClose}) {
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"32px 28px",width:"100%",maxWidth:480,maxHeight:"60vh",overflowY:"auto",boxShadow:"0 24px 80px rgba(0,0,0,0.2)"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"32px 28px",width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto",boxShadow:"0 24px 80px rgba(0,0,0,0.2)"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
           <div><div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Legal</div><h3 style={{margin:0,fontSize:22,fontWeight:900,color:C.ink}}>Privacy & Terms</h3></div>
           <button onClick={onClose} style={{width:36,height:36,borderRadius:10,border:`1.5px solid ${C.border}`,background:"transparent",cursor:"pointer",fontSize:16,color:C.inkMid,fontFamily:"inherit"}}>✕</button>
         </div>
-        {[{title:"What we collect",body:"Only your email address when you join the waitlist. Nothing else — no tracking pixels, no third-party analytics selling your data."},
-          {title:"How we use it",body:"To notify you when Nexus launches, send product updates, and share milestone news. You can unsubscribe any time with one click."},
+        {[{title:"What we collect",body:"Only your email address when you join the waitlist. Nothing else."},
+          {title:"How we use it",body:"To notify you when Nexus launches and send product updates. Unsubscribe anytime."},
           {title:"We never sell your data",body:"Your email is never sold, rented, or shared with advertisers. Ever."},
-          {title:"Calculator data",body:"All calculator inputs run locally in your browser. Nothing you type is stored or sent to our servers."},
-          {title:"Cookies",body:"We use minimal session cookies only to keep the page functional. No ad cookies, no retargeting."},
-          {title:"Your rights",body:"You can request deletion of your data at any time by emailing us. We'll remove it within 48 hours."},
-          {title:"Terms of use",body:"Nexus is a planning tool, not a licensed financial advisor. All projections are illustrative. Past market performance does not guarantee future results."},
+          {title:"Calculator data",body:"All calculator inputs run locally in your browser. Nothing is stored or sent to our servers."},
+          {title:"Cookies",body:"We use minimal session cookies only. No ad cookies, no retargeting."},
+          {title:"Your rights",body:"Request deletion anytime by emailing us. We'll remove it within 48 hours."},
+          {title:"Terms of use",body:"Nexus is a planning tool, not a licensed financial advisor. All projections are illustrative."},
         ].map(s=>(<div key={s.title} style={{marginBottom:20}}><div style={{fontSize:13,fontWeight:800,color:C.ink,marginBottom:5}}>{s.title}</div><p style={{margin:0,fontSize:13,color:C.inkMid,lineHeight:1.75}}>{s.body}</p></div>))}
-        <div style={{marginTop:8,paddingTop:20,borderTop:`1px solid ${C.border}`,fontSize:11,color:C.inkLight,textAlign:"center"}}>Last updated May 2025 · © 2025 Nexus · nexus.finance21@gmail.com</div>
+        <div style={{marginTop:8,paddingTop:20,borderTop:`1px solid ${C.border}`,fontSize:11,color:C.inkLight,textAlign:"center"}}>Last updated May 2025 · © 2025 Nexus</div>
       </div>
     </div>
   );
@@ -302,21 +317,19 @@ function ContactModal({onClose}) {
         </div>
         <div style={{background:C.accentBg,border:`1.5px solid ${C.accent}22`,borderRadius:16,padding:"20px",marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>📧 Email</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:14,fontWeight:700,color:C.ink}}>nexus.finance21@gmail.com</span>
-            <button onClick={()=>copy("nexus.finance21@gmail.com","email")} style={{background:copied==="email"?C.green:C.accent,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:10}}>{copied==="email"?"✓ Copied":"Copy"}</button>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <span style={{fontSize:13,fontWeight:700,color:C.ink}}>nexus.finance21@gmail.com</span>
+            <button onClick={()=>copy("nexus.finance21@gmail.com","email")} style={{background:copied==="email"?C.green:C.accent,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{copied==="email"?"✓ Copied":"Copy"}</button>
           </div>
-          <div style={{fontSize:12,color:C.inkMid,marginTop:8}}>We reply within 24–48 hours.</div>
         </div>
         <div style={{background:C.greenBg,border:`1.5px solid ${C.green}22`,borderRadius:16,padding:"20px",marginBottom:24}}>
-          <div style={{fontSize:11,fontWeight:700,color:C.green,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>📞 Phone / WhatsApp</div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <span style={{fontSize:14,fontWeight:700,color:C.ink}}>+351 934 062 658</span>
-            <button onClick={()=>copy("+351934062658","phone")} style={{background:copied==="phone"?C.accent:C.green,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginLeft:10}}>{copied==="phone"?"✓ Copied":"Copy"}</button>
+          <div style={{fontSize:11,fontWeight:700,color:C.green,textTransform:"uppercase",letterSpacing:1,marginBottom:10}}>📞 WhatsApp</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <span style={{fontSize:13,fontWeight:700,color:C.ink}}>+351 934 062 658</span>
+            <button onClick={()=>copy("+351934062658","phone")} style={{background:copied==="phone"?C.accent:C.green,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{copied==="phone"?"✓ Copied":"Copy"}</button>
           </div>
-          <div style={{fontSize:12,color:C.inkMid,marginTop:8}}>Available Mon–Fri, 9am–6pm (WET).</div>
         </div>
-        <div style={{textAlign:"center",fontSize:12,color:C.inkLight,lineHeight:1.7}}>Building something together? We're always open<br/>to partnerships, feedback, and early believers.</div>
+        <div style={{textAlign:"center",fontSize:12,color:C.inkLight,lineHeight:1.7}}>Building something together? Always open to partnerships and early believers.</div>
       </div>
     </div>
   );
@@ -324,80 +337,121 @@ function ContactModal({onClose}) {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [tick,setTick]=useState(0);
   const [scrolled,setScrolled]=useState(false);
   const [showPrivacy,setShowPrivacy]=useState(false);
   const [showContact,setShowContact]=useState(false);
+  const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
+
   useEffect(()=>{ const t=setInterval(()=>setTick(x=>x+1),3000); return()=>clearInterval(t); },[]);
   useEffect(()=>{ const fn=()=>setScrolled(window.scrollY>20); window.addEventListener("scroll",fn); return()=>window.removeEventListener("scroll",fn); },[]);
+
   const phrases=["invest smarter.","build wealth.","reach $1M.","start with €300."];
   const heroPts=project(150,1000,30);
-  const scrollTo=(id)=>document.getElementById(id)?.scrollIntoView({behavior:"smooth"});
+  const scrollTo=(id)=>{ document.getElementById(id)?.scrollIntoView({behavior:"smooth"}); setMobileMenuOpen(false); };
 
   return (
-    <div style={{fontFamily:"'Outfit','Trebuchet MS',sans-serif",background:C.bg}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap'); *{box-sizing:border-box} html{scroll-behavior:smooth}`}</style>
+    <div style={{fontFamily:"'Outfit','Trebuchet MS',sans-serif",background:C.bg,overflowX:"hidden"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+      `}</style>
 
       {/* NAV */}
-      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled?"rgba(248,249,252,0.95)":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"none",transition:"all 0.3s",padding:"0 24px"}}>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled||mobileMenuOpen?"rgba(248,249,252,0.97)":"transparent",backdropFilter:scrolled?"blur(12px)":"none",borderBottom:scrolled?`1px solid ${C.border}`:"none",transition:"all 0.3s",padding:"0 16px"}}>
         <div style={{maxWidth:1000,margin:"0 auto",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:28,height:28,borderRadius:8,background:C.accent,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"#fff",fontSize:14,fontWeight:900}}>N</span></div>
             <span style={{fontSize:17,fontWeight:800,color:C.ink,letterSpacing:-0.5}}>nexus</span>
           </div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>scrollTo("calculator")} style={{background:"transparent",color:C.inkMid,border:"none",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>Calculator</button>
-            <button onClick={()=>scrollTo("story")} style={{background:"transparent",color:C.inkMid,border:"none",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>Our Story</button>
-            <button onClick={()=>navigate("/waitlist")} style={{background:C.accent,color:"#fff",border:"none",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Join Waitlist</button>
-          </div>
+
+          {/* Desktop nav */}
+          {!isMobile && (
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              <button onClick={()=>scrollTo("calculator")} style={{background:"transparent",color:C.inkMid,border:"none",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>Calculator</button>
+              <button onClick={()=>scrollTo("story")} style={{background:"transparent",color:C.inkMid,border:"none",padding:"8px 16px",borderRadius:8,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit"}}>Our Story</button>
+              <button onClick={()=>navigate("/waitlist")} style={{background:C.accent,color:"#fff",border:"none",padding:"8px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Join Waitlist</button>
+            </div>
+          )}
+
+          {/* Mobile hamburger */}
+          {isMobile && (
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <button onClick={()=>navigate("/waitlist")} style={{background:C.accent,color:"#fff",border:"none",padding:"8px 14px",borderRadius:8,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Join Waitlist</button>
+              <button onClick={()=>setMobileMenuOpen(o=>!o)} style={{background:"transparent",border:`1.5px solid ${C.border}`,borderRadius:8,width:36,height:36,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
+                <span style={{width:16,height:2,background:C.ink,borderRadius:1,display:"block"}}/>
+                <span style={{width:16,height:2,background:C.ink,borderRadius:1,display:"block"}}/>
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Mobile dropdown */}
+        {isMobile && mobileMenuOpen && (
+          <div style={{padding:"12px 16px 16px",borderTop:`1px solid ${C.border}`,background:"rgba(248,249,252,0.97)"}}>
+            <button onClick={()=>scrollTo("calculator")} style={{display:"block",width:"100%",background:"transparent",color:C.ink,border:"none",padding:"12px 0",fontSize:15,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left",borderBottom:`1px solid ${C.border}`}}>Calculator</button>
+            <button onClick={()=>scrollTo("story")} style={{display:"block",width:"100%",background:"transparent",color:C.ink,border:"none",padding:"12px 0",fontSize:15,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>Our Story</button>
+          </div>
+        )}
       </nav>
 
       {/* HERO */}
-      <section id="hero" style={{minHeight:"100vh",display:"flex",alignItems:"center",background:`radial-gradient(ellipse 80% 60% at 50% -10%,#dce8ff 0%,${C.bg} 70%)`,padding:"100px 24px 60px"}}>
+      <section id="hero" style={{minHeight:"100vh",display:"flex",alignItems:"center",background:`radial-gradient(ellipse 80% 60% at 50% -10%,#dce8ff 0%,${C.bg} 70%)`,padding:isMobile?"100px 16px 60px":"100px 24px 60px"}}>
         <div style={{maxWidth:1000,margin:"0 auto",width:"100%"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:56,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:isTablet?"1fr":"1fr 1fr",gap:isTablet?40:56,alignItems:"center"}}>
+
+            {/* Left: text */}
             <div>
               <span style={{display:"inline-flex",fontSize:11,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:C.accent,background:C.accentBg,padding:"4px 12px",borderRadius:20}}>🚀 Now in Beta</span>
-              <h1 style={{fontSize:"clamp(36px,5vw,60px)",fontWeight:900,lineHeight:1.08,color:C.ink,margin:"20px 0 0",letterSpacing:-2}}>
+              <h1 style={{fontSize:isMobile?"clamp(36px,10vw,52px)":"clamp(36px,5vw,60px)",fontWeight:900,lineHeight:1.08,color:C.ink,margin:"20px 0 0",letterSpacing:-2}}>
                 Your path to<br/>
                 <span style={{color:C.accent}}>{phrases[tick%phrases.length]}</span>
               </h1>
-              <p style={{fontSize:16,color:C.inkMid,lineHeight:1.7,margin:"20px 0 30px",maxWidth:400}}>Nexus helps you build a personalised investment plan from any starting point. See exactly when you hit every milestone.</p>
+              <p style={{fontSize:15,color:C.inkMid,lineHeight:1.7,margin:"20px 0 28px",maxWidth:400}}>Nexus helps you build a personalised investment plan from any starting point. See exactly when you hit every milestone.</p>
               <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
                 <button onClick={()=>scrollTo("calculator")} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",padding:"14px 28px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",border:"none",background:C.accent,color:"#fff",fontFamily:"inherit"}}>Build my plan →</button>
                 <button onClick={()=>navigate("/waitlist")} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",padding:"13px 26px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",border:`1.5px solid ${C.border}`,background:"transparent",color:C.ink,fontFamily:"inherit"}}>Join Waitlist</button>
               </div>
-              <div style={{display:"flex",gap:28,marginTop:36}}>
+              <div style={{display:"flex",gap:isMobile?20:28,marginTop:32,flexWrap:"wrap"}}>
                 {[["€300","Starting capital"],["15.5%","Avg annual return"],["30yr","To $1M"]].map(([v,l])=>(
-                  <div key={l}><div style={{fontSize:22,fontWeight:900,color:C.ink,letterSpacing:-0.5}}>{v}</div><div style={{fontSize:12,color:C.inkLight,marginTop:2}}>{l}</div></div>
+                  <div key={l}><div style={{fontSize:isMobile?18:22,fontWeight:900,color:C.ink,letterSpacing:-0.5}}>{v}</div><div style={{fontSize:11,color:C.inkLight,marginTop:2}}>{l}</div></div>
                 ))}
               </div>
             </div>
-            <div style={{position:"relative"}}>
-              <div style={{background:"#fff",borderRadius:24,padding:22,boxShadow:"0 24px 80px rgba(0,87,255,0.12),0 4px 20px rgba(0,0,0,0.06)",border:`1px solid ${C.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
-                  <div><div style={{fontSize:11,color:C.inkLight,textTransform:"uppercase",letterSpacing:1}}>Portfolio Value</div><div style={{fontSize:30,fontWeight:900,color:C.ink,letterSpacing:-1}}>$1,000,000</div></div>
-                  <div style={{background:C.greenBg,borderRadius:10,padding:"6px 12px"}}><span style={{color:C.green,fontSize:13,fontWeight:700}}>+15.5% avg</span></div>
+
+            {/* Right: chart card — hidden on small mobile, shown on tablet+ */}
+            {!isMobile && (
+              <div style={{position:"relative"}}>
+                <div style={{background:"#fff",borderRadius:24,padding:22,boxShadow:"0 24px 80px rgba(0,87,255,0.12),0 4px 20px rgba(0,0,0,0.06)",border:`1px solid ${C.border}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18,flexWrap:"wrap",gap:10}}>
+                    <div>
+                      <div style={{fontSize:11,color:C.inkLight,textTransform:"uppercase",letterSpacing:1}}>Portfolio Value</div>
+                      <div style={{fontSize:30,fontWeight:900,color:C.ink,letterSpacing:-1}}>$1,000,000</div>
+                    </div>
+                    <div style={{background:C.greenBg,borderRadius:10,padding:"6px 12px"}}><span style={{color:C.green,fontSize:13,fontWeight:700}}>+15.5% avg</span></div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={110}>
+                    <AreaChart data={heroPts}>
+                      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.accent} stopOpacity={0.15}/><stop offset="95%" stopColor={C.accent} stopOpacity={0}/></linearGradient></defs>
+                      <Area type="monotone" dataKey="value" stroke={C.accent} strokeWidth={2.5} fill="url(#hg)" dot={false}/>
+                      <XAxis hide/><YAxis hide/>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:14}}>
+                    {[["$10K","Yr 3",C.accent],["$100K","Yr 12",C.green],["$1M","Yr 28","#e11d48"]].map(([v,y,c])=>(
+                      <div key={v} style={{background:C.bg,borderRadius:10,padding:"10px 12px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:800,color:c}}>{v}</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>{y}</div></div>
+                    ))}
+                  </div>
                 </div>
-                <ResponsiveContainer width="100%" height={110}>
-                  <AreaChart data={heroPts}>
-                    <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.accent} stopOpacity={0.15}/><stop offset="95%" stopColor={C.accent} stopOpacity={0}/></linearGradient></defs>
-                    <Area type="monotone" dataKey="value" stroke={C.accent} strokeWidth={2.5} fill="url(#hg)" dot={false}/>
-                    <XAxis hide/><YAxis hide/>
-                  </AreaChart>
-                </ResponsiveContainer>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginTop:14}}>
-                  {[["$10K","Yr 3",C.accent],["$100K","Yr 12",C.green],["$1M","Yr 28","#e11d48"]].map(([v,y,c])=>(
-                    <div key={v} style={{background:C.bg,borderRadius:10,padding:"10px 12px",textAlign:"center"}}><div style={{fontSize:14,fontWeight:800,color:c}}>{v}</div><div style={{fontSize:10,color:C.inkLight,marginTop:2}}>{y}</div></div>
-                  ))}
+                <div style={{position:"absolute",bottom:-14,left:-14,background:C.bgDark,borderRadius:14,padding:"12px 16px",boxShadow:"0 8px 32px rgba(0,0,0,0.15)",display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:34,height:34,borderRadius:10,background:C.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>💰</div>
+                  <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>+$340 this month</div><div style={{fontSize:10,color:"#666"}}>Compound working</div></div>
                 </div>
               </div>
-              <div style={{position:"absolute",bottom:-14,left:-14,background:C.bgDark,borderRadius:14,padding:"12px 16px",boxShadow:"0 8px 32px rgba(0,0,0,0.15)",display:"flex",alignItems:"center",gap:10}}>
-                <div style={{width:34,height:34,borderRadius:10,background:C.green,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>💰</div>
-                <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>+$340 this month</div><div style={{fontSize:10,color:"#666"}}>Compound working</div></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -406,16 +460,16 @@ export default function Landing() {
       <PathsSection/>
       <Story/>
 
-      {/* WAITLIST CTA SECTION */}
-      <section id="waitlist" style={{background:`radial-gradient(ellipse 70% 80% at 50% 50%,#dce8ff 0%,${C.bg} 70%)`,padding:"80px 24px"}}>
+      {/* WAITLIST CTA */}
+      <section id="waitlist" style={{background:`radial-gradient(ellipse 70% 80% at 50% 50%,#dce8ff 0%,${C.bg} 70%)`,padding:isMobile?"60px 16px":"80px 24px"}}>
         <div style={{maxWidth:520,margin:"0 auto",textAlign:"center"}}>
           <span style={{display:"inline-flex",fontSize:11,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:C.accent,background:C.accentBg,padding:"4px 12px",borderRadius:20}}>🔔 Early Access</span>
-          <h2 style={{fontSize:36,fontWeight:900,color:C.ink,margin:"20px 0 14px",letterSpacing:-1.5}}>Join the waitlist</h2>
+          <h2 style={{fontSize:isMobile?28:36,fontWeight:900,color:C.ink,margin:"20px 0 14px",letterSpacing:-1}}>Join the waitlist</h2>
           <p style={{fontSize:15,color:C.inkMid,lineHeight:1.7,marginBottom:36}}>The Nexus app is coming. Get early access, founding member pricing, and updates on the $1M journey.</p>
           <button onClick={()=>navigate("/waitlist")} style={{display:"inline-flex",alignItems:"center",gap:10,background:C.accent,color:"#fff",border:"none",borderRadius:14,padding:"18px 40px",fontSize:16,fontWeight:800,cursor:"pointer",fontFamily:"inherit",boxShadow:"0 8px 24px rgba(0,87,255,0.25)"}}>
             Join the Waitlist →
           </button>
-          <div style={{display:"flex",gap:32,justifyContent:"center",marginTop:44}}>
+          <div style={{display:"flex",gap:isMobile?20:32,justifyContent:"center",marginTop:44,flexWrap:"wrap"}}>
             {[["🔒","No spam"],["📱","App 2027"],["🏦","Nexus Bank 2029"]].map(([ic,lb])=>(
               <div key={lb} style={{fontSize:12,color:C.inkLight,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}><span style={{fontSize:20}}>{ic}</span>{lb}</div>
             ))}
@@ -423,7 +477,8 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer style={{background:C.bgDark,padding:"28px 24px",borderTop:"1px solid #1a1a2a"}}>
+      {/* FOOTER */}
+      <footer style={{background:C.bgDark,padding:"28px 16px",borderTop:"1px solid #1a1a2a"}}>
         <div style={{maxWidth:1000,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:24,height:24,borderRadius:6,background:C.accent,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:"#fff",fontSize:12,fontWeight:900}}>N</span></div>
